@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: alluxio-master
+  labels:
+    app: alluxio-master
+spec:
+  ports:
+  - port: 19998
+    name: rpc
+  - port: 19999
+    name: web
+  clusterIP: None
+  selector:
+    app: alluxio-master
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: alluxio-master
+spec:
+  serviceName: "alluxio-master"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: alluxio-master
+    spec:
+      hostNetwork: true
+      hostPID: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: alluxio-master
+          image: alluxio/alluxio:latest
+          env:
+            {{- range $key, $value := .Values.customAlluxioConfig }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: CLUSTER_NAME
+              value: alluxio-k8s
+          ports:
+          - containerPort: 19998
+            name: rpc
+          - containerPort: 19999
+            name: web
+          volumeMounts:
+            - name: alluxio-data
+              mountPath: /alluxio/data
+      restartPolicy: Always
+      volumes:
+        - name: alluxio-data
+          hostPath:
+            path: {{ .Values.alluxioDataHostPath }}
