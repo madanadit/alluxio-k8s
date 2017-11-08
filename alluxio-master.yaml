@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: alluxio-master
   labels:
-    app: alluxio-master
+    app: alluxio
 spec:
   ports:
   - port: 19998
@@ -19,6 +19,9 @@ kind: StatefulSet
 metadata:
   name: alluxio-master
 spec:
+  selector:
+    matchLabels:
+      app: alluxio-master
   serviceName: "alluxio-master"
   replicas: 1
   template:
@@ -32,13 +35,10 @@ spec:
       containers:
         - name: alluxio-master
           image: alluxio/alluxio:latest
+          command: ["master"]
           env:
-            {{- range $key, $value := .Values.customAlluxioConfig }}
-            - name: {{ $key | quote }}
-              value: {{ $value | quote }}
-            {{- end }}
-            - name: CLUSTER_NAME
-              value: alluxio-k8s
+            - name: ALLUXIO_UNDERFS_ADDRESS
+              value: /underStorage
           ports:
           - containerPort: 19998
             name: rpc
@@ -46,9 +46,8 @@ spec:
             name: web
           volumeMounts:
             - name: alluxio-data
-              mountPath: /alluxio/data
+              mountPath: /underStorage
       restartPolicy: Always
       volumes:
         - name: alluxio-data
-          hostPath:
-            path: {{ .Values.alluxioDataHostPath }}
+          emptyDir: {}
