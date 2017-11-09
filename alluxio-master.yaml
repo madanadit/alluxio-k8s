@@ -34,11 +34,14 @@ spec:
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: alluxio-master
-          image: alluxio/alluxio:latest
-          command: ["master"]
+          image: alluxioadit/alluxio:1.6.0
+          command: ["/entrypoint.sh"]
+          args: ["master"]
           env:
             - name: ALLUXIO_UNDERFS_ADDRESS
               value: /underStorage
+            - name: ALLUXIO_MASTER_HOSTNAME
+              value: alluxio-master
           ports:
           - containerPort: 19998
             name: rpc
