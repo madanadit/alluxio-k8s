@@ -9,16 +9,6 @@ spec:
         name: alluxio-worker
         app: alluxio-worker
     spec:
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: "app"
-                    operator: In
-                    values:
-                    - alluxio-worker
-              topologyKey: "kubernetes.io/hostname"
       hostNetwork: true
       hostPID: true
       dnsPolicy: ClusterFirstWithHostNet
@@ -33,9 +23,11 @@ spec:
             - name: ALLUXIO_MASTER_HOSTNAME
               value: alluxio-master
             - name: ALLUXIO_WORKER_MEMORY_SIZE
-              value: 1GB
+              value: "1GB"
             - name: ALLUXIO_RAM_FOLDER
               value: /opt/ramdisk
+            - name: ALLUXIO_WORKER_WEB_PORT
+              value: "30001"
           securityContext:
             privileged: true
           volumeMounts:
